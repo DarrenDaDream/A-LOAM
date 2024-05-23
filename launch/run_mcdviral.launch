@@ -1,0 +1,45 @@
+<launch>
+    <arg name="publish_clock" default="--clock"/>
+    
+    <!-- Path to MCDVIRAL dataset, downloadable at mcdviral.github.io. -->
+    <arg name="data_path" default="/media/darren/mySamsungSSD/MCDVIRAL/"/>
+
+    <!-- Choose the bag file -->
+    <!-- <arg name="bag_file"  default="$(arg data_path)/ntu_day_01/*ntu_day_01_d435i.bag"/> -->
+    <!-- <arg name="bag_file"  default="$(arg data_path)/ntu_day_01/*.bag"/> -->
+    <arg  name="bag_file"  default="$(arg data_path)/kth_day_06/*.bag"/>
+    <!-- <arg name="bag_file"  default="$(arg data_path)/tuhh_day_03/*.bag"/> -->
+
+    <node pkg="slict" type="slict_OusterToVelodyne" name="slict_OusterToVelodyne" respawn="false" output="log" required="true"></node>
+
+    <!-- Play the bag file -->
+
+    <node required="false" pkg="rosbag" type="play" name="rosbag_player"
+        args="$(arg publish_clock) $(arg bag_file) -r 1.0 -s 0"
+        launch-prefix="bash -c 'sleep 1; $0 $@' "/>
+
+    <param name="scan_line" type="int" value="64" />
+
+    <!-- if 1, do mapping 10 Hz, if 2, do mapping 5 Hz. Suggest to use 1, it will adjust frequence automaticlly -->
+    <param name="mapping_skip_frame" type="int" value="1" />
+
+    <!-- remove too closed points -->
+    <param name="minimum_range" type="double" value="5"/>
+
+
+    <param name="mapping_line_resolution" type="double" value="0.8"/>
+    <param name="mapping_plane_resolution" type="double" value="1.6"/>
+
+    <node pkg="aloam_velodyne" type="ascanRegistration" name="ascanRegistration" output="screen" />
+
+    <node pkg="aloam_velodyne" type="alaserOdometry" name="alaserOdometry" output="screen" />
+
+    <node pkg="aloam_velodyne" type="alaserMapping" name="alaserMapping" output="screen" />
+
+    <arg name="rviz" default="true" />
+    <group if="$(arg rviz)">
+        <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find aloam_velodyne)/rviz_cfg/run_mcdviral.rviz" />
+    </group>
+
+
+</launch>
