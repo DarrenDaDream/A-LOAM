@@ -1,4 +1,4 @@
-#running mcdviral data set on A-LOAM
+# running mcdviral data set on A-LOAM
 
 ## running mcd on (Velodyne HDL-64)
 Download (https://mcdviral.github.io/Download.html) and set the `data_path` and `bag_file` parameters in `run_mcdviral.launch` file.
